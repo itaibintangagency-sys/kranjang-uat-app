@@ -8,6 +8,8 @@ let allSteps = [];
 let allGlossary = [];
 let editingTesterId = null;
 let editingFeedbackId = null;
+let editingStepId = null;
+let editingTermId = null;
 
 const feedbackLabel = { easy: "😀 Mudah", confusing: "😐 Agak Bingung", difficult: "😣 Sulit" };
 const roleLabel = { kol: "🌟 KOL", brand: "🏢 Brand", admin: "⚙️ Admin", super_admin: "👑 Super Admin" };
@@ -336,6 +338,14 @@ async function loadReference() {
   allGlossary = glossaryRes.data || [];
 }
 
+// Konversi antara format simpan ("\n" literal, dipakai step-flow.js) dan format textarea (baris nyata)
+function instructionToTextarea(stored) {
+  return (stored || "").replace(/\\n/g, "\n").replace(/^• /gm, "").replace(/\n• /g, "\n");
+}
+function textareaToInstruction(text) {
+  return text.split("\n").map((l) => l.trim()).filter(Boolean).map((l) => "• " + l).join("\\n");
+}
+
 function renderReference() {
   const search = document.getElementById("refSearch").value.toLowerCase();
 
@@ -347,20 +357,214 @@ function renderReference() {
   );
 
   document.getElementById("refSteps").innerHTML = steps.length
-    ? steps.map((s) => `
-      <div class="ref-step-card">
-        <div class="rt">${roleLabel[s.role] || s.role} · Langkah ${s.step_order}</div>
-        <div class="rs">${esc(s.title)}</div>
-      </div>`).join("")
+    ? steps.map((s) => {
+        const terms = (s.glossary_terms || []).map((t) => `<span class="ref-term-chip">${esc(t)}</span>`).join("");
+        return `
+        <div class="ref-step-card ${s.is_active ? "" : "inactive"}" id="stepcard-${s.id}">
+          <div class="ref-step-head" onclick="toggleStepCard('${s.id}')">
+            <div class="flex1">
+              <div class="rt">${roleLabel[s.role] || s.role} · Langkah ${s.step_order}
+                <span class="status-pill ${s.is_active ? "status-active" : "status-inactive"}">${s.is_active ? "Aktif" : "Nonaktif"}</span>
+              </div>
+              <div class="rs">${esc(s.title)}</div>
+            </div>
+            <span class="ref-chevron">▼</span>
+          </div>
+          <div class="ref-step-body">
+            <div class="ref-step-inner">
+              <div class="ref-instruction">${esc(instructionToTextarea(s.instruction))}</div>
+              ${s.warning_note ? `<div class="ref-warning">⚠️ ${esc(s.warning_note)}</div>` : ""}
+              ${terms ? `<div class="ref-terms">${terms}</div>` : ""}
+              <div class="ref-step-actions">
+                <button class="btn btn-outline btn-sm" onclick="openStepModal('${s.id}')">✏️ Edit</button>
+                <button class="btn btn-outline btn-sm" onclick="handleToggleStepActive('${s.id}', ${s.is_active})">
+                  ${s.is_active ? "🙈 Nonaktifkan" : "👁️ Aktifkan"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      }).join("")
     : `<p class="muted">Tidak ada langkah yang cocok.</p>`;
 
   document.getElementById("refGlossary").innerHTML = glossary.length
     ? glossary.map((g) => `
-      <div class="ref-glossary-item">
-        <b>${esc(g.term)}</b>
-        <span style="flex:1;text-align:right;color:var(--muted)">${esc(g.definition)}</span>
+      <div class="ref-glossary-card">
+        <div style="flex:1">
+          <div class="rg-term">${esc(g.term)}</div>
+          <div class="rg-def">${esc(g.definition)}</div>
+        </div>
+        <div class="row-actions">
+          <button class="icon-btn" onclick="openTermModal('${g.id}')" title="Edit">✏️</button>
+          <button class="icon-btn danger" onclick="handleDeleteTerm('${g.id}', '${esc(g.term)}')" title="Hapus">🗑️</button>
+        </div>
       </div>`).join("")
     : `<p class="muted">Tidak ada istilah yang cocok.</p>`;
+}
+
+function toggleStepCard(id) {
+  document.getElementById("stepcard-" + id).classList.toggle("open");
+}
+
+function buildGlossaryChecklist(selectedTerms) {
+  const box = document.getElementById("stepGlossaryChecklist");
+  const selected = new Set(selectedTerms || []);
+  box.innerHTML = allGlossary.map((g) => `
+    <label class="checkbox-item">
+      <input type="checkbox" value="${esc(g.term)}" ${selected.has(g.term) ? "checked" : ""}>
+      ${esc(g.term)}
+    </label>`).join("") || `<p class="muted" style="font-size:13px">Belum ada istilah di kamus.</p>`;
+}
+
+function openStepModal(id) {
+  editingStepId = id || null;
+  document.getElementById("stepModalError").classList.remove("show");
+
+  if (id) {
+    const s = allSteps.find((x) => x.id === id);
+    document.getElementById("stepModalTitle").textContent = "✏️ Edit Langkah";
+    document.getElementById("m-step-role").value = s.role;
+    document.getElementById("m-step-order").value = s.step_order;
+    document.getElementById("m-step-title").value = s.title;
+    document.getElementById("m-step-instruction").value = instructionToTextarea(s.instruction);
+    document.getElementById("m-step-warning").value = s.warning_note || "";
+    buildGlossaryChecklist(s.glossary_terms);
+  } else {
+    document.getElementById("stepModalTitle").textContent = "+ Tambah Langkah";
+    document.getElementById("m-step-role").value = "kol";
+    document.getElementById("m-step-order").value = "";
+    document.getElementById("m-step-title").value = "";
+    document.getElementById("m-step-instruction").value = "";
+    document.getElementById("m-step-warning").value = "";
+    buildGlossaryChecklist([]);
+  }
+  document.getElementById("stepModalOverlay").classList.add("open");
+}
+
+function closeStepModal() {
+  document.getElementById("stepModalOverlay").classList.remove("open");
+  editingStepId = null;
+}
+
+async function saveStepModal() {
+  const role = document.getElementById("m-step-role").value;
+  const order = parseInt(document.getElementById("m-step-order").value, 10);
+  const title = document.getElementById("m-step-title").value.trim();
+  const instructionRaw = document.getElementById("m-step-instruction").value;
+  const warning = document.getElementById("m-step-warning").value.trim();
+  const terms = [...document.querySelectorAll("#stepGlossaryChecklist input:checked")].map((c) => c.value);
+  const errBox = document.getElementById("stepModalError");
+  errBox.classList.remove("show");
+
+  if (!title || !order || !instructionRaw.trim()) {
+    errBox.textContent = "Urutan, judul, dan instruksi wajib diisi.";
+    errBox.classList.add("show");
+    return;
+  }
+
+  const instruction = textareaToInstruction(instructionRaw);
+
+  try {
+    if (editingStepId) {
+      const { error } = await db.rpc("update_step", {
+        input_code: accessCode, p_id: editingStepId, p_role: role, p_step_order: order,
+        p_title: title, p_instruction: instruction, p_warning_note: warning || null, p_glossary_terms: terms,
+      });
+      if (error) throw error;
+    } else {
+      const { error } = await db.rpc("add_step", {
+        input_code: accessCode, p_role: role, p_step_order: order,
+        p_title: title, p_instruction: instruction, p_warning_note: warning || null, p_glossary_terms: terms,
+      });
+      if (error) throw error;
+    }
+    closeStepModal();
+    await loadReference();
+    renderReference();
+  } catch (e) {
+    console.error(e);
+    errBox.textContent = "Gagal menyimpan langkah.";
+    errBox.classList.add("show");
+  }
+}
+
+async function handleToggleStepActive(id, currentlyActive) {
+  const nextState = !currentlyActive;
+  const confirmMsg = nextState
+    ? "Aktifkan langkah ini kembali? Tester baru akan melihatnya lagi."
+    : "Nonaktifkan langkah ini? Tester baru tidak akan melihatnya, tapi histori feedback lama tetap aman.";
+  if (!confirm(confirmMsg)) return;
+
+  const { error } = await db.rpc("set_step_active", { input_code: accessCode, p_id: id, p_is_active: nextState });
+  if (error) { console.error(error); showToast("Gagal mengubah status langkah."); return; }
+  await loadReference();
+  renderReference();
+}
+
+function openTermModal(id) {
+  editingTermId = id || null;
+  document.getElementById("termModalError").classList.remove("show");
+
+  if (id) {
+    const g = allGlossary.find((x) => x.id === id);
+    document.getElementById("termModalTitle").textContent = "✏️ Edit Istilah";
+    document.getElementById("m-term-name").value = g.term;
+    document.getElementById("m-term-definition").value = g.definition;
+  } else {
+    document.getElementById("termModalTitle").textContent = "+ Tambah Istilah";
+    document.getElementById("m-term-name").value = "";
+    document.getElementById("m-term-definition").value = "";
+  }
+  document.getElementById("termModalOverlay").classList.add("open");
+}
+
+function closeTermModal() {
+  document.getElementById("termModalOverlay").classList.remove("open");
+  editingTermId = null;
+}
+
+async function saveTermModal() {
+  const term = document.getElementById("m-term-name").value.trim();
+  const definition = document.getElementById("m-term-definition").value.trim();
+  const errBox = document.getElementById("termModalError");
+  errBox.classList.remove("show");
+
+  if (!term || !definition) {
+    errBox.textContent = "Istilah dan penjelasan wajib diisi.";
+    errBox.classList.add("show");
+    return;
+  }
+
+  try {
+    if (editingTermId) {
+      const { error } = await db.rpc("update_glossary_term", {
+        input_code: accessCode, p_id: editingTermId, p_term: term, p_definition: definition,
+      });
+      if (error) throw error;
+    } else {
+      const { error } = await db.rpc("add_glossary_term", {
+        input_code: accessCode, p_term: term, p_definition: definition,
+      });
+      if (error) throw error;
+    }
+    closeTermModal();
+    await loadReference();
+    renderReference();
+  } catch (e) {
+    console.error(e);
+    errBox.textContent = e.message && e.message.includes("duplicate")
+      ? "Istilah ini sudah ada di kamus."
+      : "Gagal menyimpan istilah.";
+    errBox.classList.add("show");
+  }
+}
+
+async function handleDeleteTerm(id, term) {
+  if (!confirm(`Hapus istilah "${term}" dari kamus?`)) return;
+  const { error } = await db.rpc("delete_glossary_term", { input_code: accessCode, p_id: id });
+  if (error) { console.error(error); showToast("Gagal menghapus istilah."); return; }
+  await loadReference();
+  renderReference();
 }
 
 // ============ INIT ============
@@ -400,6 +604,12 @@ async function init() {
 
   // Referensi tab events
   document.getElementById("refSearch").addEventListener("input", renderReference);
+  document.getElementById("addStepBtn").addEventListener("click", () => openStepModal(null));
+  document.getElementById("stepModalCancel").addEventListener("click", closeStepModal);
+  document.getElementById("stepModalSave").addEventListener("click", saveStepModal);
+  document.getElementById("addTermBtn").addEventListener("click", () => openTermModal(null));
+  document.getElementById("termModalCancel").addEventListener("click", closeTermModal);
+  document.getElementById("termModalSave").addEventListener("click", saveTermModal);
 }
 
 init();

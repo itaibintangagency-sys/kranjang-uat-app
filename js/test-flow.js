@@ -34,6 +34,7 @@ async function loadSteps(role) {
     .from("test_steps")
     .select("*")
     .eq("role", role)
+    .eq("is_active", true)
     .order("step_order", { ascending: true });
   if (error) { console.error(error); return []; }
   return data;

@@ -19,6 +19,12 @@ drop function if exists update_feedback(text, uuid, text, text);
 drop function if exists delete_feedback(text, uuid);
 drop function if exists get_all_sessions(text);
 drop function if exists delete_session(text, uuid);
+drop function if exists add_step(text, text, int, text, text, text, text[]);
+drop function if exists update_step(text, uuid, text, int, text, text, text, text[]);
+drop function if exists set_step_active(text, uuid, boolean);
+drop function if exists add_glossary_term(text, text, text);
+drop function if exists update_glossary_term(text, uuid, text, text);
+drop function if exists delete_glossary_term(text, uuid);
 
 -- ============ TABLES ============
 
@@ -37,7 +43,8 @@ create table test_steps (
   title text not null,
   instruction text not null,
   warning_note text,
-  glossary_terms text[] default '{}'
+  glossary_terms text[] default '{}',
+  is_active boolean not null default true
 );
 
 create table glossary (
@@ -121,7 +128,7 @@ returns table(
 ) as $$
   select
     t.id, t.access_code, t.name, t.role, t.created_at,
-    coalesce((select count(*) from test_steps ts where ts.role = t.role), 0) as steps_total,
+    coalesce((select count(*) from test_steps ts where ts.role = t.role and ts.is_active = true), 0) as steps_total,
     coalesce((select count(distinct sr.step_id) from step_responses sr where sr.tester_id = t.id), 0) as steps_done,
     (select ses.overall_rating from test_sessions ses
        where ses.tester_id = t.id order by ses.completed_at desc nulls last limit 1) as overall_rating
@@ -256,6 +263,125 @@ end;
 $$ language plpgsql security definer;
 
 grant execute on function delete_session(text, uuid) to anon;
+
+-- ============ FUNCTIONS — TAB REFERENSI: LANGKAH TESTING ============
+
+-- Tambah langkah baru
+create or replace function add_step(
+  input_code text, p_role text, p_step_order int, p_title text,
+  p_instruction text, p_warning_note text, p_glossary_terms text[]
+)
+returns boolean as $$
+declare
+  is_super boolean;
+begin
+  select exists(select 1 from testers where access_code = input_code and role = 'super_admin') into is_super;
+  if not is_super then
+    raise exception 'Unauthorized: kode akses bukan super admin';
+  end if;
+
+  insert into test_steps (role, step_order, title, instruction, warning_note, glossary_terms, is_active)
+  values (p_role, p_step_order, p_title, p_instruction, p_warning_note, p_glossary_terms, true);
+  return true;
+end;
+$$ language plpgsql security definer;
+
+grant execute on function add_step(text, text, int, text, text, text, text[]) to anon;
+
+-- Ubah isi langkah yang sudah ada
+create or replace function update_step(
+  input_code text, p_id uuid, p_role text, p_step_order int, p_title text,
+  p_instruction text, p_warning_note text, p_glossary_terms text[]
+)
+returns boolean as $$
+declare
+  is_super boolean;
+begin
+  select exists(select 1 from testers where access_code = input_code and role = 'super_admin') into is_super;
+  if not is_super then
+    raise exception 'Unauthorized: kode akses bukan super admin';
+  end if;
+
+  update test_steps set
+    role = p_role, step_order = p_step_order, title = p_title,
+    instruction = p_instruction, warning_note = p_warning_note, glossary_terms = p_glossary_terms
+  where id = p_id;
+  return true;
+end;
+$$ language plpgsql security definer;
+
+grant execute on function update_step(text, uuid, text, int, text, text, text, text[]) to anon;
+
+-- Aktifkan / nonaktifkan langkah tanpa menghapusnya (histori feedback tetap aman)
+create or replace function set_step_active(input_code text, p_id uuid, p_is_active boolean)
+returns boolean as $$
+declare
+  is_super boolean;
+begin
+  select exists(select 1 from testers where access_code = input_code and role = 'super_admin') into is_super;
+  if not is_super then
+    raise exception 'Unauthorized: kode akses bukan super admin';
+  end if;
+
+  update test_steps set is_active = p_is_active where id = p_id;
+  return true;
+end;
+$$ language plpgsql security definer;
+
+grant execute on function set_step_active(text, uuid, boolean) to anon;
+
+-- ============ FUNCTIONS — TAB REFERENSI: KAMUS ISTILAH (Full CRUD) ============
+
+create or replace function add_glossary_term(input_code text, p_term text, p_definition text)
+returns boolean as $$
+declare
+  is_super boolean;
+begin
+  select exists(select 1 from testers where access_code = input_code and role = 'super_admin') into is_super;
+  if not is_super then
+    raise exception 'Unauthorized: kode akses bukan super admin';
+  end if;
+
+  insert into glossary (term, definition) values (p_term, p_definition);
+  return true;
+end;
+$$ language plpgsql security definer;
+
+grant execute on function add_glossary_term(text, text, text) to anon;
+
+create or replace function update_glossary_term(input_code text, p_id uuid, p_term text, p_definition text)
+returns boolean as $$
+declare
+  is_super boolean;
+begin
+  select exists(select 1 from testers where access_code = input_code and role = 'super_admin') into is_super;
+  if not is_super then
+    raise exception 'Unauthorized: kode akses bukan super admin';
+  end if;
+
+  update glossary set term = p_term, definition = p_definition where id = p_id;
+  return true;
+end;
+$$ language plpgsql security definer;
+
+grant execute on function update_glossary_term(text, uuid, text, text) to anon;
+
+create or replace function delete_glossary_term(input_code text, p_id uuid)
+returns boolean as $$
+declare
+  is_super boolean;
+begin
+  select exists(select 1 from testers where access_code = input_code and role = 'super_admin') into is_super;
+  if not is_super then
+    raise exception 'Unauthorized: kode akses bukan super admin';
+  end if;
+
+  delete from glossary where id = p_id;
+  return true;
+end;
+$$ language plpgsql security definer;
+
+grant execute on function delete_glossary_term(text, uuid) to anon;
 
 -- ============ SEED: GLOSSARY ============
 insert into glossary (term, definition) values

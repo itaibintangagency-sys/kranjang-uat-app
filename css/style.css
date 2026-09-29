@@ -227,16 +227,61 @@ input,textarea{font-family:inherit}
 .empty-row td{text-align:center;padding:30px;color:var(--muted)}
 
 /* Reference tab */
+.ref-section-header{display:flex;align-items:center;margin-bottom:10px}
+.ref-section-header h3{font-size:15px;flex:1}
 .ref-step-card{
   background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
-  padding:14px 16px;margin-bottom:10px;
+  margin-bottom:10px;overflow:hidden;
 }
-.ref-step-card .rt{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase}
-.ref-step-card .rs{font-size:14.5px;font-weight:700;margin-top:2px}
-.ref-glossary-item{
-  display:flex;justify-content:space-between;gap:16px;padding:10px 0;
-  border-bottom:1px solid var(--border);font-size:13.5px;
+.ref-step-card.inactive{opacity:.55}
+.ref-step-head{
+  display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;user-select:none;
 }
+.ref-step-head .rt{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase}
+.ref-step-head .rs{font-size:14.5px;font-weight:700;margin-top:2px}
+.ref-step-head .flex1{flex:1}
+.ref-chevron{font-size:11px;color:var(--muted);transition:transform .2s;flex-shrink:0}
+.ref-step-card.open .ref-chevron{transform:rotate(180deg)}
+.ref-step-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.ref-step-card.open .ref-step-body{max-height:1000px}
+.ref-step-inner{padding:0 16px 16px}
+.ref-instruction{
+  background:var(--bg);border-radius:var(--radius-sm);padding:12px 14px;
+  font-size:13.5px;white-space:pre-line;line-height:1.7;margin-bottom:10px;
+}
+.ref-warning{
+  background:var(--amber-l);border-radius:var(--radius-sm);padding:10px 14px;
+  font-size:13px;margin-bottom:10px;color:#78350F;
+}
+.ref-terms{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.ref-term-chip{
+  background:var(--primary-l);color:var(--primary-d);font-size:11.5px;font-weight:600;
+  padding:3px 10px;border-radius:20px;
+}
+.ref-step-actions{display:flex;gap:8px}
+
+.status-pill{
+  display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;
+  font-size:11px;font-weight:700;
+}
+.status-active{background:var(--green-l);color:var(--green)}
+.status-inactive{background:var(--red-l);color:var(--third2)}
+
+.ref-glossary-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:14px 16px;margin-bottom:8px;display:flex;justify-content:space-between;gap:12px;
+  align-items:flex-start;
+}
+.ref-glossary-card .rg-term{font-weight:700;font-size:14px;margin-bottom:3px}
+.ref-glossary-card .rg-def{font-size:13px;color:var(--muted);line-height:1.5}
+
+/* Checkbox list for glossary terms in step modal */
+.checkbox-list{
+  max-height:180px;overflow-y:auto;border:1.5px solid var(--border);border-radius:var(--radius-sm);
+  padding:10px 12px;
+}
+.checkbox-item{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13.5px}
+.checkbox-item input{width:16px;height:16px}
 
 /* Admin dashboard specific */
 .dash-wrap{max-width:1000px;margin:0 auto;padding:24px 16px 60px}

@@ -112,11 +112,78 @@
     <div class="toolbar">
       <input type="text" id="refSearch" placeholder="Cari langkah atau istilah...">
     </div>
-    <h3 style="margin-bottom:10px;font-size:15px">📋 30 Langkah Uji Coba</h3>
-    <div id="refSteps" class="mt-16" style="margin-bottom:28px"></div>
 
-    <h3 style="margin-bottom:10px;font-size:15px">📖 Kamus Istilah</h3>
+    <div class="ref-section-header">
+      <h3>📋 Langkah Uji Coba</h3>
+      <button class="btn btn-primary btn-sm" id="addStepBtn">+ Tambah Langkah</button>
+    </div>
+    <div id="refSteps" style="margin-bottom:28px"></div>
+
+    <div class="ref-section-header">
+      <h3>📖 Kamus Istilah</h3>
+      <button class="btn btn-primary btn-sm" id="addTermBtn">+ Tambah Istilah</button>
+    </div>
     <div id="refGlossary"></div>
+  </div>
+</div>
+
+<!-- ===== MODAL: TAMBAH/EDIT LANGKAH ===== -->
+<div class="modal-overlay" id="stepModalOverlay">
+  <div class="modal">
+    <div class="modal-title" id="stepModalTitle">+ Tambah Langkah</div>
+    <div class="field">
+      <label>Peran</label>
+      <select class="modal-select" id="m-step-role">
+        <option value="kol">KOL</option>
+        <option value="brand">Brand</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Urutan Langkah</label>
+      <input type="number" id="m-step-order" min="1" placeholder="Contoh: 1">
+    </div>
+    <div class="field">
+      <label>Judul Langkah</label>
+      <input type="text" id="m-step-title" placeholder="Contoh: Daftar Akun KOL">
+    </div>
+    <div class="field">
+      <label>Instruksi (satu baris = satu poin)</label>
+      <textarea id="m-step-instruction" style="min-height:120px" placeholder="Buka aplikasi Kranjang...&#10;Pilih tipe akun...&#10;..."></textarea>
+    </div>
+    <div class="field">
+      <label>Peringatan (opsional)</label>
+      <textarea id="m-step-warning" placeholder="Kosongkan jika tidak ada peringatan khusus"></textarea>
+    </div>
+    <div class="field">
+      <label>Istilah Terkait (centang yang relevan)</label>
+      <div class="checkbox-list" id="stepGlossaryChecklist"></div>
+    </div>
+    <div class="error-msg" id="stepModalError"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" id="stepModalCancel">Batal</button>
+      <button class="btn btn-primary btn-sm" id="stepModalSave">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: TAMBAH/EDIT ISTILAH ===== -->
+<div class="modal-overlay" id="termModalOverlay">
+  <div class="modal">
+    <div class="modal-title" id="termModalTitle">+ Tambah Istilah</div>
+    <div class="field">
+      <label>Istilah</label>
+      <input type="text" id="m-term-name" placeholder="Contoh: SOW">
+    </div>
+    <div class="field">
+      <label>Penjelasan Sederhana</label>
+      <textarea id="m-term-definition" placeholder="Jelaskan dengan bahasa yang mudah dipahami..."></textarea>
+    </div>
+    <div class="error-msg" id="termModalError"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" id="termModalCancel">Batal</button>
+      <button class="btn btn-primary btn-sm" id="termModalSave">Simpan</button>
+    </div>
   </div>
 </div>
 

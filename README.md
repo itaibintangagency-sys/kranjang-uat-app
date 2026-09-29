@@ -93,9 +93,11 @@ Setelah masuk dengan kode `role = super_admin`, kamu akan melihat 5 tab:
 | **👥 Tester** | Kelola tester — tambah, edit, hapus. Kolom "Progres" menunjukkan berapa langkah sudah dikerjakan |
 | **💬 Feedback** | Semua respons per langkah dari semua tester — bisa diedit atau dihapus, plus filter & export CSV |
 | **⭐ Sesi Testing** | Rating akhir dan komentar penutup tiap tester — bisa dihapus jika perlu |
-| **📖 Referensi** | Daftar 30 langkah uji coba dan 20 istilah kamus (tampilan saja, untuk edit isi tetap lewat Supabase Table Editor) |
+| **📖 Referensi** | Lihat isi lengkap setiap langkah (klik untuk expand), edit isi, tambah langkah baru, dan aktifkan/nonaktifkan langkah tanpa menghapusnya. Kamus istilah bisa ditambah/diedit/dihapus bebas |
 
 **Catatan penting:** Jangan ubah kode akses tester yang sedang aktif menguji — kode lama langsung tidak berlaku begitu diubah, dan tester yang sedang di tengah proses bisa kehilangan sesinya.
+
+**Soal Nonaktifkan Langkah:** Langkah yang dinonaktifkan tidak akan hilang — histori feedback yang sudah masuk untuk langkah itu tetap aman dan tetap muncul di tab Feedback. Hanya saja tester baru tidak akan melihat langkah tersebut lagi di alur testing mereka. Ini pilihan yang lebih aman dibanding menghapus permanen.
 
 ---
 
