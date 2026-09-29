@@ -11,6 +11,14 @@ drop table if exists glossary cascade;
 drop table if exists testers cascade;
 drop function if exists validate_access_code(text);
 drop function if exists get_dashboard_data(text);
+drop function if exists get_all_testers(text);
+drop function if exists add_tester(text, text, text, text);
+drop function if exists update_tester(text, uuid, text, text, text);
+drop function if exists delete_tester(text, uuid);
+drop function if exists update_feedback(text, uuid, text, text);
+drop function if exists delete_feedback(text, uuid);
+drop function if exists get_all_sessions(text);
+drop function if exists delete_session(text, uuid);
 
 -- ============ TABLES ============
 
@@ -85,13 +93,15 @@ $$ language sql security definer;
 
 grant execute on function validate_access_code(text) to anon;
 
--- Dashboard Super Admin: hanya bisa dipanggil dengan kode akses super_admin yang valid
+-- Dashboard Super Admin (Tab Feedback): hanya bisa dipanggil dengan kode akses super_admin yang valid
 create or replace function get_dashboard_data(input_code text)
 returns table(
-  step_id uuid, step_title text, step_role text,
-  feedback text, comment text, tester_name text, submitted_at timestamptz
+  response_id uuid, step_id uuid, step_title text, step_role text,
+  tester_id uuid, tester_name text,
+  feedback text, comment text, submitted_at timestamptz
 ) as $$
-  select sr.step_id, ts.title, ts.role, sr.feedback, sr.comment, t.name, sr.submitted_at
+  select sr.id, sr.step_id, ts.title, ts.role, sr.tester_id, t.name,
+         sr.feedback, sr.comment, sr.submitted_at
   from step_responses sr
   join test_steps ts on ts.id = sr.step_id
   join testers t on t.id = sr.tester_id
@@ -100,6 +110,152 @@ returns table(
 $$ language sql security definer;
 
 grant execute on function get_dashboard_data(text) to anon;
+
+-- ============ FUNCTIONS — TAB TESTER (Full CRUD) ============
+
+-- Ambil semua tester beserta progres pengerjaan step dan rating akhirnya
+create or replace function get_all_testers(input_code text)
+returns table(
+  id uuid, access_code text, name text, role text, created_at timestamptz,
+  steps_total bigint, steps_done bigint, overall_rating int
+) as $$
+  select
+    t.id, t.access_code, t.name, t.role, t.created_at,
+    coalesce((select count(*) from test_steps ts where ts.role = t.role), 0) as steps_total,
+    coalesce((select count(distinct sr.step_id) from step_responses sr where sr.tester_id = t.id), 0) as steps_done,
+    (select ses.overall_rating from test_sessions ses
+       where ses.tester_id = t.id order by ses.completed_at desc nulls last limit 1) as overall_rating
+  from testers t
+  where exists (select 1 from testers sa where sa.access_code = input_code and sa.role = 'super_admin')
+  order by t.created_at desc;
+$$ language sql security definer;
+
+grant execute on function get_all_testers(text) to anon;
+
+-- Tambah tester baru
+create or replace function add_tester(input_code text, p_access_code text, p_name text, p_role text)
+returns boolean as $$
+declare
+  is_super boolean;
+begin
+  select exists(select 1 from testers where access_code = input_code and role = 'super_admin') into is_super;
+  if not is_super then
+    raise exception 'Unauthorized: kode akses bukan super admin';
+  end if;
+
+  insert into testers (access_code, name, role) values (p_access_code, p_name, p_role);
+  return true;
+end;
+$$ language plpgsql security definer;
+
+grant execute on function add_tester(text, text, text, text) to anon;
+
+-- Ubah data tester
+create or replace function update_tester(input_code text, p_id uuid, p_access_code text, p_name text, p_role text)
+returns boolean as $$
+declare
+  is_super boolean;
+begin
+  select exists(select 1 from testers where access_code = input_code and role = 'super_admin') into is_super;
+  if not is_super then
+    raise exception 'Unauthorized: kode akses bukan super admin';
+  end if;
+
+  update testers set access_code = p_access_code, name = p_name, role = p_role where id = p_id;
+  return true;
+end;
+$$ language plpgsql security definer;
+
+grant execute on function update_tester(text, uuid, text, text, text) to anon;
+
+-- Hapus tester (otomatis ikut hapus feedback & sesi miliknya agar tidak jadi data yatim)
+create or replace function delete_tester(input_code text, p_id uuid)
+returns boolean as $$
+declare
+  is_super boolean;
+begin
+  select exists(select 1 from testers where access_code = input_code and role = 'super_admin') into is_super;
+  if not is_super then
+    raise exception 'Unauthorized: kode akses bukan super admin';
+  end if;
+
+  delete from step_responses where tester_id = p_id;
+  delete from test_sessions where tester_id = p_id;
+  delete from testers where id = p_id;
+  return true;
+end;
+$$ language plpgsql security definer;
+
+grant execute on function delete_tester(text, uuid) to anon;
+
+-- ============ FUNCTIONS — TAB FEEDBACK (Edit & Hapus) ============
+
+create or replace function update_feedback(input_code text, p_id uuid, p_feedback text, p_comment text)
+returns boolean as $$
+declare
+  is_super boolean;
+begin
+  select exists(select 1 from testers where access_code = input_code and role = 'super_admin') into is_super;
+  if not is_super then
+    raise exception 'Unauthorized: kode akses bukan super admin';
+  end if;
+
+  update step_responses set feedback = p_feedback, comment = p_comment where id = p_id;
+  return true;
+end;
+$$ language plpgsql security definer;
+
+grant execute on function update_feedback(text, uuid, text, text) to anon;
+
+create or replace function delete_feedback(input_code text, p_id uuid)
+returns boolean as $$
+declare
+  is_super boolean;
+begin
+  select exists(select 1 from testers where access_code = input_code and role = 'super_admin') into is_super;
+  if not is_super then
+    raise exception 'Unauthorized: kode akses bukan super admin';
+  end if;
+
+  delete from step_responses where id = p_id;
+  return true;
+end;
+$$ language plpgsql security definer;
+
+grant execute on function delete_feedback(text, uuid) to anon;
+
+-- ============ FUNCTIONS — TAB SESI TESTING (Lihat & Hapus) ============
+
+create or replace function get_all_sessions(input_code text)
+returns table(
+  id uuid, tester_id uuid, tester_name text, tester_role text,
+  overall_rating int, overall_comment text, completed_at timestamptz
+) as $$
+  select ses.id, ses.tester_id, t.name, t.role, ses.overall_rating, ses.overall_comment, ses.completed_at
+  from test_sessions ses
+  join testers t on t.id = ses.tester_id
+  where exists (select 1 from testers sa where sa.access_code = input_code and sa.role = 'super_admin')
+  order by ses.completed_at desc nulls last;
+$$ language sql security definer;
+
+grant execute on function get_all_sessions(text) to anon;
+
+create or replace function delete_session(input_code text, p_id uuid)
+returns boolean as $$
+declare
+  is_super boolean;
+begin
+  select exists(select 1 from testers where access_code = input_code and role = 'super_admin') into is_super;
+  if not is_super then
+    raise exception 'Unauthorized: kode akses bukan super admin';
+  end if;
+
+  delete from test_sessions where id = p_id;
+  return true;
+end;
+$$ language plpgsql security definer;
+
+grant execute on function delete_session(text, uuid) to anon;
 
 -- ============ SEED: GLOSSARY ============
 insert into glossary (term, definition) values

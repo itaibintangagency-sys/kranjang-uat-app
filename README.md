@@ -72,15 +72,30 @@ kranjang-uat-app/
 
 ### STEP 5 — Tambahkan Tester
 
-1. Kembali ke Supabase → **Table Editor** → tabel `testers`
-2. Klik **Insert row** → isi:
-   - `access_code`: kode unik, misal `KOL-BUDI01`
-   - `name`: nama tester (opsional, untuk personalisasi)
-   - `role`: pilih salah satu — `kol`, `brand`, `admin`, atau `super_admin`
-3. Ulangi untuk setiap tester yang akan diundang
+Sekarang bisa langsung dari dashboard, tidak perlu buka Supabase lagi:
+
+1. Buka `[url-vercel-kamu]/index.html` → masuk pakai kode `SUPERADMIN-01`
+2. Kamu akan diarahkan ke **Dashboard Super Admin** → buka tab **👥 Tester**
+3. Klik **+ Tambah Tester** → isi kode akses, nama, dan peran → **Simpan**
 4. Bagikan kode akses masing-masing lewat WhatsApp/link bersama URL Vercel kamu
 
-> 4 tester contoh (`KOL-DEMO01`, `BRAND-DEMO01`, `ADMIN-DEMO01`, `SUPERADMIN-01`) sudah otomatis dibuat oleh `supabase_schema.sql` — bisa dipakai untuk uji coba pertama, lalu dihapus/diganti nanti.
+> 4 tester contoh (`KOL-DEMO01`, `BRAND-DEMO01`, `ADMIN-DEMO01`, `SUPERADMIN-01`) sudah otomatis dibuat oleh `supabase_schema.sql` — bisa dipakai untuk uji coba pertama, lalu dihapus/diganti nanti lewat dashboard.
+
+---
+
+## 🖥️ Dashboard Super Admin — Panduan Singkat
+
+Setelah masuk dengan kode `role = super_admin`, kamu akan melihat 5 tab:
+
+| Tab | Fungsi |
+|---|---|
+| **📊 Ringkasan** | Statistik cepat — total tester, total feedback, breakdown mudah/bingung/sulit, sesi selesai |
+| **👥 Tester** | Kelola tester — tambah, edit, hapus. Kolom "Progres" menunjukkan berapa langkah sudah dikerjakan |
+| **💬 Feedback** | Semua respons per langkah dari semua tester — bisa diedit atau dihapus, plus filter & export CSV |
+| **⭐ Sesi Testing** | Rating akhir dan komentar penutup tiap tester — bisa dihapus jika perlu |
+| **📖 Referensi** | Daftar 30 langkah uji coba dan 20 istilah kamus (tampilan saja, untuk edit isi tetap lewat Supabase Table Editor) |
+
+**Catatan penting:** Jangan ubah kode akses tester yang sedang aktif menguji — kode lama langsung tidak berlaku begitu diubah, dan tester yang sedang di tengah proses bisa kehilangan sesinya.
 
 ---
 
@@ -102,6 +117,7 @@ Aplikasi ini didesain untuk **kebutuhan internal testing dengan jumlah tester te
 
 - Kode akses divalidasi lewat function khusus (`validate_access_code`) sehingga tabel `testers` tidak terekspos langsung — cukup aman untuk kebutuhan ini
 - Tabel `step_responses` dan `test_sessions` bisa dibaca oleh siapa saja yang tahu URL aplikasi (tanpa perlu kode akses) — ini pilihan sengaja untuk menyederhanakan alur tanpa sistem login penuh
+- Semua fungsi CRUD di dashboard (`add_tester`, `update_tester`, `delete_tester`, `update_feedback`, `delete_feedback`, `delete_session`) mengecek dulu bahwa kode yang dipakai memang berperan `super_admin` sebelum mengizinkan perubahan apapun
 - Jika ke depannya butuh keamanan lebih ketat (misalnya data sensitif atau tester dalam jumlah besar), pertimbangkan migrasi ke Supabase Auth dengan sesi login yang sesungguhnya
 
 ---

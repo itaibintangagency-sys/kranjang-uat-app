@@ -163,6 +163,81 @@ input,textarea{font-family:inherit}
 }
 .summary-line:last-child{border-bottom:none}
 
+/* ===== Tab Navigation ===== */
+.tab-nav{
+  display:flex;gap:4px;background:var(--surface);border-radius:var(--radius-sm);
+  padding:5px;box-shadow:var(--shadow);margin-bottom:20px;overflow-x:auto;
+}
+.tab-btn{
+  flex:1;padding:10px 14px;border:none;background:transparent;border-radius:8px;
+  font-size:13.5px;font-weight:700;color:var(--muted);white-space:nowrap;
+  transition:all .15s;
+}
+.tab-btn:hover{background:var(--primary-l);color:var(--primary-d)}
+.tab-btn.active{background:var(--primary);color:#fff}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* Toolbar (search + filter + add button) row above tables */
+.toolbar{
+  display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;
+}
+.toolbar input[type="text"]{
+  flex:1;min-width:180px;padding:10px 14px;border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);font-size:14px;outline:none;background:var(--surface);
+}
+.toolbar input[type="text"]:focus{border-color:var(--primary)}
+.toolbar select{
+  padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);
+  font-size:13.5px;background:var(--surface);
+}
+.toolbar-spacer{flex:1}
+
+/* Action buttons inside table rows */
+.row-actions{display:flex;gap:6px}
+.icon-btn{
+  width:30px;height:30px;border:none;border-radius:7px;background:var(--bg);
+  font-size:14px;display:flex;align-items:center;justify-content:center;
+  transition:background .15s;
+}
+.icon-btn:hover{background:var(--primary-l)}
+.icon-btn.danger:hover{background:var(--red-l)}
+
+/* ===== Modal ===== */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(15,20,40,.55);backdrop-filter:blur(3px);
+  z-index:500;display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .2s;padding:20px;
+}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{
+  background:var(--surface);border-radius:var(--radius);width:100%;max-width:440px;
+  max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);
+  transform:translateY(14px);transition:transform .2s;padding:26px;
+}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-title{font-size:17px;font-weight:800;margin-bottom:18px}
+.modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+.modal-select{
+  width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:var(--radius-sm);
+  font-size:14px;background:var(--bg);outline:none;
+}
+.modal-select:focus{border-color:var(--primary)}
+
+.empty-row td{text-align:center;padding:30px;color:var(--muted)}
+
+/* Reference tab */
+.ref-step-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:14px 16px;margin-bottom:10px;
+}
+.ref-step-card .rt{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase}
+.ref-step-card .rs{font-size:14.5px;font-weight:700;margin-top:2px}
+.ref-glossary-item{
+  display:flex;justify-content:space-between;gap:16px;padding:10px 0;
+  border-bottom:1px solid var(--border);font-size:13.5px;
+}
+
 /* Admin dashboard specific */
 .dash-wrap{max-width:1000px;margin:0 auto;padding:24px 16px 60px}
 .dash-header{

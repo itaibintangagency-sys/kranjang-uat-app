@@ -10,48 +10,167 @@
 
 <div class="dash-wrap">
   <div class="dash-header">
-    <div style="font-size:22px;font-weight:800">🧺 Kranjang — Dashboard Hasil Uji Coba</div>
-    <div class="muted" style="color:rgba(255,255,255,.75);margin-top:4px">Ringkasan feedback dari semua tester (KOL, Brand, Admin)</div>
+    <div style="font-size:22px;font-weight:800">🧺 Kranjang — Dashboard Super Admin</div>
+    <div class="muted" style="color:rgba(255,255,255,.75);margin-top:4px">Kelola tester dan pantau seluruh hasil uji coba aplikasi</div>
   </div>
 
-  <div class="dash-stats" id="statsRow">
-    <div class="stat-card"><div class="stat-num" id="statTotal">—</div><div class="stat-label">Total Feedback</div></div>
-    <div class="stat-card"><div class="stat-num" id="statEasy">—</div><div class="stat-label">😀 Mudah</div></div>
-    <div class="stat-card"><div class="stat-num" id="statConfusing">—</div><div class="stat-label">😐 Agak Bingung</div></div>
-    <div class="stat-card"><div class="stat-num" id="statDifficult">—</div><div class="stat-label">😣 Sulit</div></div>
+  <!-- ===== TAB NAV ===== -->
+  <div class="tab-nav">
+    <button class="tab-btn active" data-tab="ringkasan">📊 Ringkasan</button>
+    <button class="tab-btn" data-tab="tester">👥 Tester</button>
+    <button class="tab-btn" data-tab="feedback">💬 Feedback</button>
+    <button class="tab-btn" data-tab="sesi">⭐ Sesi Testing</button>
+    <button class="tab-btn" data-tab="referensi">📖 Referensi</button>
   </div>
 
-  <div class="dash-filters">
-    <select id="filterRole">
-      <option value="">Semua Peran</option>
-      <option value="kol">KOL</option>
-      <option value="brand">Brand</option>
-      <option value="admin">Admin</option>
-    </select>
-    <select id="filterFeedback">
-      <option value="">Semua Feedback</option>
-      <option value="easy">😀 Mudah</option>
-      <option value="confusing">😐 Agak Bingung</option>
-      <option value="difficult">😣 Sulit</option>
-    </select>
-    <button class="btn btn-outline btn-sm" id="exportBtn">⬇ Export CSV</button>
+  <!-- ===== TAB: RINGKASAN ===== -->
+  <div class="tab-panel active" id="panel-ringkasan">
+    <div class="dash-stats">
+      <div class="stat-card"><div class="stat-num" id="statTesters">—</div><div class="stat-label">Total Tester</div></div>
+      <div class="stat-card"><div class="stat-num" id="statFeedback">—</div><div class="stat-label">Total Feedback</div></div>
+      <div class="stat-card"><div class="stat-num" id="statEasy">—</div><div class="stat-label">😀 Mudah</div></div>
+      <div class="stat-card"><div class="stat-num" id="statConfusing">—</div><div class="stat-label">😐 Agak Bingung</div></div>
+      <div class="stat-card"><div class="stat-num" id="statDifficult">—</div><div class="stat-label">😣 Sulit</div></div>
+      <div class="stat-card"><div class="stat-num" id="statSessions">—</div><div class="stat-label">Sesi Selesai</div></div>
+    </div>
   </div>
 
-  <table class="dash-table" id="resultsTable">
-    <thead>
-      <tr>
-        <th>Peran</th>
-        <th>Langkah</th>
-        <th>Tester</th>
-        <th>Feedback</th>
-        <th>Komentar</th>
-        <th>Waktu</th>
-      </tr>
-    </thead>
-    <tbody id="resultsBody">
-      <tr><td colspan="6" class="text-center muted" style="padding:24px">Memuat data...</td></tr>
-    </tbody>
-  </table>
+  <!-- ===== TAB: TESTER ===== -->
+  <div class="tab-panel" id="panel-tester">
+    <div class="toolbar">
+      <input type="text" id="testerSearch" placeholder="Cari nama atau kode akses...">
+      <select id="testerRoleFilter">
+        <option value="">Semua Peran</option>
+        <option value="kol">KOL</option>
+        <option value="brand">Brand</option>
+        <option value="admin">Admin</option>
+        <option value="super_admin">Super Admin</option>
+      </select>
+      <span class="toolbar-spacer"></span>
+      <button class="btn btn-primary btn-sm" id="addTesterBtn">+ Tambah Tester</button>
+    </div>
+    <table class="dash-table">
+      <thead>
+        <tr>
+          <th>Kode Akses</th><th>Nama</th><th>Peran</th><th>Progres</th><th>Rating</th><th>Terdaftar</th><th></th>
+        </tr>
+      </thead>
+      <tbody id="testerBody"><tr class="empty-row"><td colspan="7">Memuat...</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- ===== TAB: FEEDBACK ===== -->
+  <div class="tab-panel" id="panel-feedback">
+    <div class="toolbar">
+      <input type="text" id="fbSearch" placeholder="Cari langkah, tester, atau komentar...">
+      <select id="fbRoleFilter">
+        <option value="">Semua Peran</option>
+        <option value="kol">KOL</option>
+        <option value="brand">Brand</option>
+        <option value="admin">Admin</option>
+      </select>
+      <select id="fbFeedbackFilter">
+        <option value="">Semua Feedback</option>
+        <option value="easy">😀 Mudah</option>
+        <option value="confusing">😐 Agak Bingung</option>
+        <option value="difficult">😣 Sulit</option>
+      </select>
+      <span class="toolbar-spacer"></span>
+      <button class="btn btn-outline btn-sm" id="exportBtn">⬇ Export CSV</button>
+    </div>
+    <table class="dash-table">
+      <thead>
+        <tr><th>Peran</th><th>Langkah</th><th>Tester</th><th>Feedback</th><th>Komentar</th><th>Waktu</th><th></th></tr>
+      </thead>
+      <tbody id="feedbackBody"><tr class="empty-row"><td colspan="7">Memuat...</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- ===== TAB: SESI TESTING ===== -->
+  <div class="tab-panel" id="panel-sesi">
+    <div class="toolbar">
+      <input type="text" id="sesSearch" placeholder="Cari nama tester...">
+      <select id="sesRatingFilter">
+        <option value="">Semua Rating</option>
+        <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+        <option value="4">⭐⭐⭐⭐ (4)</option>
+        <option value="3">⭐⭐⭐ (3)</option>
+        <option value="2">⭐⭐ (2)</option>
+        <option value="1">⭐ (1)</option>
+      </select>
+    </div>
+    <table class="dash-table">
+      <thead>
+        <tr><th>Tester</th><th>Peran</th><th>Rating</th><th>Komentar Akhir</th><th>Selesai</th><th></th></tr>
+      </thead>
+      <tbody id="sesiBody"><tr class="empty-row"><td colspan="6">Memuat...</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- ===== TAB: REFERENSI ===== -->
+  <div class="tab-panel" id="panel-referensi">
+    <div class="toolbar">
+      <input type="text" id="refSearch" placeholder="Cari langkah atau istilah...">
+    </div>
+    <h3 style="margin-bottom:10px;font-size:15px">📋 30 Langkah Uji Coba</h3>
+    <div id="refSteps" class="mt-16" style="margin-bottom:28px"></div>
+
+    <h3 style="margin-bottom:10px;font-size:15px">📖 Kamus Istilah</h3>
+    <div id="refGlossary"></div>
+  </div>
+</div>
+
+<!-- ===== MODAL: TAMBAH/EDIT TESTER ===== -->
+<div class="modal-overlay" id="testerModalOverlay">
+  <div class="modal">
+    <div class="modal-title" id="testerModalTitle">+ Tambah Tester</div>
+    <div class="field">
+      <label>Kode Akses</label>
+      <input type="text" id="m-access-code" placeholder="Contoh: KOL-BUDI01">
+    </div>
+    <div class="field">
+      <label>Nama (opsional)</label>
+      <input type="text" id="m-name" placeholder="Nama tester">
+    </div>
+    <div class="field">
+      <label>Peran</label>
+      <select class="modal-select" id="m-role">
+        <option value="kol">KOL</option>
+        <option value="brand">Brand</option>
+        <option value="admin">Admin</option>
+        <option value="super_admin">Super Admin</option>
+      </select>
+    </div>
+    <div class="error-msg" id="testerModalError"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" id="testerModalCancel">Batal</button>
+      <button class="btn btn-primary btn-sm" id="testerModalSave">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: EDIT FEEDBACK ===== -->
+<div class="modal-overlay" id="fbModalOverlay">
+  <div class="modal">
+    <div class="modal-title">✏️ Edit Feedback</div>
+    <div class="field">
+      <label>Feedback</label>
+      <select class="modal-select" id="m-fb-feedback">
+        <option value="easy">😀 Mudah</option>
+        <option value="confusing">😐 Agak Bingung</option>
+        <option value="difficult">😣 Sulit</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Komentar</label>
+      <textarea id="m-fb-comment" placeholder="Komentar tester..."></textarea>
+    </div>
+    <div class="error-msg" id="fbModalError"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" id="fbModalCancel">Batal</button>
+      <button class="btn btn-primary btn-sm" id="fbModalSave">Simpan</button>
+    </div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
