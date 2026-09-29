@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kranjang — Dashboard Super Admin</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<div class="dash-wrap">
+  <div class="dash-header">
+    <div style="font-size:22px;font-weight:800">🧺 Kranjang — Dashboard Hasil Uji Coba</div>
+    <div class="muted" style="color:rgba(255,255,255,.75);margin-top:4px">Ringkasan feedback dari semua tester (KOL, Brand, Admin)</div>
+  </div>
+
+  <div class="dash-stats" id="statsRow">
+    <div class="stat-card"><div class="stat-num" id="statTotal">—</div><div class="stat-label">Total Feedback</div></div>
+    <div class="stat-card"><div class="stat-num" id="statEasy">—</div><div class="stat-label">😀 Mudah</div></div>
+    <div class="stat-card"><div class="stat-num" id="statConfusing">—</div><div class="stat-label">😐 Agak Bingung</div></div>
+    <div class="stat-card"><div class="stat-num" id="statDifficult">—</div><div class="stat-label">😣 Sulit</div></div>
+  </div>
+
+  <div class="dash-filters">
+    <select id="filterRole">
+      <option value="">Semua Peran</option>
+      <option value="kol">KOL</option>
+      <option value="brand">Brand</option>
+      <option value="admin">Admin</option>
+    </select>
+    <select id="filterFeedback">
+      <option value="">Semua Feedback</option>
+      <option value="easy">😀 Mudah</option>
+      <option value="confusing">😐 Agak Bingung</option>
+      <option value="difficult">😣 Sulit</option>
+    </select>
+    <button class="btn btn-outline btn-sm" id="exportBtn">⬇ Export CSV</button>
+  </div>
+
+  <table class="dash-table" id="resultsTable">
+    <thead>
+      <tr>
+        <th>Peran</th>
+        <th>Langkah</th>
+        <th>Tester</th>
+        <th>Feedback</th>
+        <th>Komentar</th>
+        <th>Waktu</th>
+      </tr>
+    </thead>
+    <tbody id="resultsBody">
+      <tr><td colspan="6" class="text-center muted" style="padding:24px">Memuat data...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase-client.js"></script>
+<script src="../js/admin-dashboard.js"></script>
+</body>
+</html>

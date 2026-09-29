@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Kranjang — Uji Coba Aplikasi</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="screen">
+  <div class="card">
+    <div class="brand-logo">
+      <div class="name">🧺 kranjang</div>
+      <div class="tag">Uji Coba Aplikasi — Bantu Kami Jadi Lebih Baik!</div>
+    </div>
+
+    <p class="muted text-center" style="margin-bottom:20px">
+      Masukkan kode akses yang sudah kamu terima untuk mulai membantu kami menguji aplikasi Kranjang. Prosesnya cepat dan tidak perlu bikin akun baru.
+    </p>
+
+    <div class="error-msg" id="errorBox"></div>
+
+    <div class="field">
+      <label for="accessCode">Kode Akses Kamu</label>
+      <input type="text" id="accessCode" placeholder="Contoh: KOL-DEMO01" autocomplete="off" autocapitalize="characters">
+    </div>
+
+    <button class="btn btn-primary" id="submitBtn">Mulai Uji Coba →</button>
+
+    <p class="muted text-center mt-24" style="font-size:12.5px">
+      Belum punya kode akses? Hubungi tim yang mengundangmu untuk ikut testing ini.
+    </p>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/access.js"></script>
+</body>
+</html>

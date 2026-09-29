@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Kranjang — Terima Kasih!</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="screen">
+  <div class="card">
+    <div class="success-icon">🎉</div>
+    <div class="step-title text-center">Terima Kasih Sudah Membantu!</div>
+    <p class="muted text-center mt-16" style="margin-bottom:24px">
+      Kamu sudah menyelesaikan semua langkah uji coba. Sebelum selesai, boleh kasih tahu kami gimana pengalaman kamu secara keseluruhan?
+    </p>
+
+    <div class="star-rating" id="starRating">
+      <span class="star" data-value="1">★</span>
+      <span class="star" data-value="2">★</span>
+      <span class="star" data-value="3">★</span>
+      <span class="star" data-value="4">★</span>
+      <span class="star" data-value="5">★</span>
+    </div>
+
+    <div class="field">
+      <label for="finalComment">Ada masukan lain untuk tim Kranjang? (opsional)</label>
+      <textarea id="finalComment" placeholder="Tulis di sini..."></textarea>
+    </div>
+
+    <div class="error-msg" id="summaryError"></div>
+
+    <button class="btn btn-primary" id="finishBtn">Kirim & Selesai</button>
+
+    <div id="doneMessage" class="hidden text-center mt-24">
+      <div style="font-size:40px">✅</div>
+      <p style="font-weight:700;margin-top:8px">Feedback kamu sudah terkirim!</p>
+      <p class="muted mt-16">Kamu boleh menutup halaman ini sekarang. Terima kasih banyak! 🙏</p>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-client.js"></script>
+<script>
+let rating = 0;
+const tester = JSON.parse(sessionStorage.getItem("kranjang_tester") || "null");
+
+if (!tester) {
+  window.location.href = "index.html";
+}
+
+document.querySelectorAll(".star").forEach((star) => {
+  star.addEventListener("click", () => {
+    rating = parseInt(star.dataset.value);
+    document.querySelectorAll(".star").forEach((s) => {
+      s.classList.toggle("active", parseInt(s.dataset.value) <= rating);
+    });
+  });
+});
+
+document.getElementById("finishBtn").addEventListener("click", async () => {
+  const errBox = document.getElementById("summaryError");
+  errBox.classList.remove("show");
+
+  if (rating === 0) {
+    errBox.textContent = "Yuk, kasih bintang penilaian dulu ya (boleh 1 sampai 5).";
+    errBox.classList.add("show");
+    return;
+  }
+
+  const btn = document.getElementById("finishBtn");
+  btn.disabled = true;
+  btn.textContent = "Mengirim...";
+
+  const comment = document.getElementById("finalComment").value.trim();
+
+  const { error } = await db.from("test_sessions").insert({
+    tester_id: tester.id,
+    overall_rating: rating,
+    overall_comment: comment || null,
+    completed_at: new Date().toISOString(),
+  });
+
+  if (error) {
+    console.error(error);
+    errBox.textContent = "Gagal mengirim. Coba lagi ya.";
+    errBox.classList.add("show");
+    btn.disabled = false;
+    btn.textContent = "Kirim & Selesai";
+    return;
+  }
+
+  document.querySelectorAll(".card > *:not(#doneMessage)").forEach((el) => el.classList.add("hidden"));
+  document.getElementById("doneMessage").classList.remove("hidden");
+  sessionStorage.removeItem("kranjang_tester");
+});
+</script>
+</body>
+</html>
