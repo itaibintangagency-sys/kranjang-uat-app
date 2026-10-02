@@ -12,6 +12,9 @@
   --radius:14px;--radius-sm:10px;
   --shadow:0 2px 8px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.05);
   --shadow-lg:0 12px 32px rgba(30,58,114,.18);
+  /* Form controls — warna eksplisit agar selalu terbaca */
+  --input-bg:#FFFFFF;--input-text:#1A1F36;--placeholder:#94A3B8;
+  color-scheme:light;
 }
 html{-webkit-text-size-adjust:100%}
 body{
@@ -20,7 +23,11 @@ body{
   min-height:100vh;font-size:16px;line-height:1.6;
 }
 button{font-family:inherit;cursor:pointer}
-input,textarea{font-family:inherit}
+input,textarea,select{font-family:inherit;color:var(--input-text)}
+::placeholder{color:var(--placeholder);opacity:1}
+select option{color:var(--input-text);background:var(--input-bg)}
+input:disabled,textarea:disabled,select:disabled{color:var(--muted);cursor:not-allowed}
+input[type="checkbox"],input[type="radio"]{accent-color:var(--primary)}
 
 /* Layout wrapper — mobile-first, centered card */
 .screen{
@@ -53,9 +60,10 @@ input,textarea{font-family:inherit}
 .field input,.field textarea{
   width:100%;padding:14px 16px;font-size:16px;
   border:2px solid var(--border);border-radius:var(--radius-sm);
-  outline:none;transition:border-color .15s;background:var(--bg);
+  outline:none;transition:border-color .15s,box-shadow .15s;
+  background:var(--input-bg);color:var(--input-text);
 }
-.field input:focus,.field textarea:focus{border-color:var(--primary)}
+.field input:focus,.field textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(51,86,170,.15)}
 .field textarea{resize:vertical;min-height:80px}
 
 .btn{
@@ -184,12 +192,12 @@ input,textarea{font-family:inherit}
 }
 .toolbar input[type="text"]{
   flex:1;min-width:180px;padding:10px 14px;border:1.5px solid var(--border);
-  border-radius:var(--radius-sm);font-size:14px;outline:none;background:var(--surface);
+  border-radius:var(--radius-sm);font-size:14px;outline:none;background:var(--input-bg);color:var(--input-text);
 }
 .toolbar input[type="text"]:focus{border-color:var(--primary)}
 .toolbar select{
   padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);
-  font-size:13.5px;background:var(--surface);
+  font-size:13.5px;background:var(--input-bg);color:var(--input-text);
 }
 .toolbar-spacer{flex:1}
 
@@ -220,9 +228,9 @@ input,textarea{font-family:inherit}
 .modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
 .modal-select{
   width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:var(--radius-sm);
-  font-size:14px;background:var(--bg);outline:none;
+  font-size:14px;background:var(--input-bg);color:var(--input-text);outline:none;
 }
-.modal-select:focus{border-color:var(--primary)}
+.modal-select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(51,86,170,.15)}
 
 .empty-row td{text-align:center;padding:30px;color:var(--muted)}
 
@@ -278,9 +286,9 @@ input,textarea{font-family:inherit}
 /* Checkbox list for glossary terms in step modal */
 .checkbox-list{
   max-height:180px;overflow-y:auto;border:1.5px solid var(--border);border-radius:var(--radius-sm);
-  padding:10px 12px;
+  padding:10px 12px;background:var(--input-bg);color:var(--input-text);
 }
-.checkbox-item{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13.5px}
+.checkbox-item{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13.5px;color:var(--input-text)}
 .checkbox-item input{width:16px;height:16px}
 
 /* Admin dashboard specific */
@@ -297,7 +305,7 @@ input,textarea{font-family:inherit}
 .dash-table th{text-align:left;padding:12px 14px;background:var(--bg);font-size:12px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border)}
 .dash-table td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13.5px;vertical-align:top}
 .dash-filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
-.dash-filters select{padding:8px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--border);font-size:13px}
+.dash-filters select{background:var(--input-bg);color:var(--input-text);padding:8px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--border);font-size:13px}
 .pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:700}
 .pill-easy{background:var(--green-l);color:var(--green)}
 .pill-confusing{background:var(--amber-l);color:#92400E}
